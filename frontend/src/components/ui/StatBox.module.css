@@ -1,0 +1,97 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  padding: 14px 16px;
+}
+
+.heading {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--color-ink-faint);
+}
+.sub {
+  font-size: 10.5px;
+  color: var(--color-ink-faint);
+  margin-bottom: 10px;
+}
+
+.valueRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.valueRow:last-child {
+  border-bottom: none;
+}
+.valueLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+.valueCluster {
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.valueSep {
+  color: var(--color-ink-faint);
+  font-weight: normal;
+}
+
+.barHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.barLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+}
+.barValue {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+.barTrack {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  overflow: hidden;
+  position: relative;
+  margin-top: 6px;
+}
+.barReference {
+  position: absolute;
+  height: 100%;
+  background: var(--color-ink-faint);
+  opacity: 0.5;
+}
+.barCurrent {
+  position: absolute;
+  height: 100%;
+}
+.deltaLine {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  margin-top: 6px;
+}

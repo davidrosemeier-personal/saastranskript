@@ -1,0 +1,107 @@
+export interface User {
+  id: string;
+  google_id: string;
+  email: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  is_admin: boolean;
+  status: "active" | "blocked";
+  usage_limit_minutes: number | null;
+  cycle_start_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DriveCredentials {
+  id: string;
+  user_id: string;
+  encrypted_refresh_token: string;
+  drive_folder_id: string | null;
+  status: "active" | "revoked";
+  created_at: string;
+  updated_at: string;
+}
+
+export type RecordingStatus = "uploaded" | "processing" | "completed" | "failed";
+
+export interface Recording {
+  id: string;
+  user_id: string;
+  original_filename: string;
+  storage_path: string | null;
+  duration_seconds: number | null;
+  status: RecordingStatus;
+  provider: string | null;
+  provider_job_id: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Transcript {
+  id: string;
+  recording_id: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TranscriptSegment {
+  id: string;
+  transcript_id: string;
+  user_id: string;
+  speaker_label: string;
+  speaker_name: string | null;
+  text: string;
+  start_ms: number;
+  end_ms: number;
+  sort_order: number;
+  speaker_sample_path: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface KnownName {
+  id: string;
+  user_id: string;
+  speaker_label: string;
+  display_name: string;
+  created_at: string;
+}
+
+export interface UsageLedgerEntry {
+  id: string;
+  user_id: string;
+  recording_id: string | null;
+  minutes_consumed: number;
+  created_at: string;
+}
+
+export type ProviderName = "assemblyai" | "deepgram" | "whisper";
+
+export interface ProviderCredentials {
+  id: string;
+  provider: ProviderName;
+  encrypted_api_key: string | null;
+  is_active: boolean;
+  updated_at: string;
+}
+
+export interface PlatformSettings {
+  default_usage_limit_minutes: number;
+  updated_at: string;
+}
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  is_admin: boolean;
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthenticatedUser;
+    }
+  }
+}

@@ -1,0 +1,56 @@
+.segmented {
+  display: flex;
+  gap: 2px;
+  background: var(--color-surface-muted);
+  padding: 4px;
+  border-radius: var(--radius-control);
+}
+.segment {
+  padding: 7px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-ink-soft);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.segmentActive {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-card);
+}
+
+.searchField {
+  width: 100%;
+  max-width: 360px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 13px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-input);
+  background: var(--color-surface);
+  margin-bottom: 12px;
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-surface-muted);
+  color: var(--color-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+.iconButton:hover {
+  color: var(--color-ink);
+}
+.chevron {
+  transition: transform var(--transition-fast);
+}
+.chevronOpen {
+  transform: rotate(180deg);
+}
