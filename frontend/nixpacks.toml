@@ -1,5 +1,7 @@
 [phases.build]
-cmds = ["npm ci", "npm run build"]
+# --include=dev overrides NODE_ENV=production, which npm otherwise reads as a signal
+# to skip devDependencies — but vite/typescript are devDependencies needed to build.
+cmds = ["npm ci --include=dev", "npm run build"]
 
 [start]
 cmd = "npm run start"
