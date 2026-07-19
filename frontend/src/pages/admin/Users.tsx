@@ -19,7 +19,16 @@ import { Badge } from "../../components/ui/Badge";
 import { DetailFieldPanel, DetailGrid, DetailGroup } from "../../components/ui/DetailPanel";
 import { TextInput } from "../../components/ui/Form";
 import { Button } from "../../components/ui/Button";
-import { api } from "../../lib/api";
+import { Banner } from "../../components/ui/Banner";
+import { api, ApiError } from "../../lib/api";
+
+function errorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const body = err.body as { error?: string } | null;
+    return body?.error ?? `Request failed (${err.status})`;
+  }
+  return err instanceof Error ? err.message : "Something went wrong";
+}
 
 interface AdminUser {
   id: string;
@@ -37,10 +46,15 @@ const TEMPLATE = "2fr 1.3fr 1fr 0.9fr 0.9fr 0.9fr 32px";
 export function AdminUsers() {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [query, setQuery] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { isOpen, toggle } = useExpandableRow();
 
   async function load() {
-    setUsers(await api.get<AdminUser[]>("/admin/users"));
+    try {
+      setUsers(await api.get<AdminUser[]>("/admin/users"));
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   }
 
   useEffect(() => {
@@ -67,19 +81,30 @@ export function AdminUsers() {
   }, [users]);
 
   async function handleBlock(id: string, block: boolean) {
-    await api.post(`/admin/users/${id}/${block ? "block" : "unblock"}`);
-    load();
+    setError(null);
+    try {
+      await api.post(`/admin/users/${id}/${block ? "block" : "unblock"}`);
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   }
 
   async function handleOverride(id: string, minutes: string) {
-    const value = minutes.trim() === "" ? null : Number(minutes);
-    await api.patch(`/admin/users/${id}/usage-limit`, { minutes: value });
-    load();
+    setError(null);
+    try {
+      const value = minutes.trim() === "" ? null : Number(minutes);
+      await api.patch(`/admin/users/${id}/usage-limit`, { minutes: value });
+      await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   }
 
   return (
     <div>
       <PageHeader title="Users" subtitle="Manage tenants, usage limits, and access" />
+      {error && <Banner tone="danger">{error}</Banner>}
 
       <StatBoxGrid>
         <StatBox heading="Total users">
