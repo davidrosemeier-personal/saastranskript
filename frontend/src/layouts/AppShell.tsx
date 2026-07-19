@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import styles from "./AppShell.module.css";
 import { useAuth } from "../lib/AuthContext";
 import { API_BASE } from "../lib/config";
@@ -12,6 +12,8 @@ export interface NavItem {
 
 export function AppShell({ navItems, children }: { navItems: NavItem[]; children: ReactNode }) {
   const { user } = useAuth();
+  const location = useLocation();
+  const inAdmin = location.pathname.startsWith("/admin");
 
   async function handleLogout() {
     await fetch(`${API_BASE}/auth/logout`, { method: "POST", credentials: "include" });
@@ -44,6 +46,11 @@ export function AppShell({ navItems, children }: { navItems: NavItem[]; children
         </nav>
 
         <div className={styles.footer}>
+          {user?.isAdmin && (
+            <Link className={styles.footerLink} to={inAdmin ? "/upload" : "/admin/users"}>
+              {inAdmin ? "Back to app" : "Admin dashboard"}
+            </Link>
+          )}
           <button className={styles.footerLink} onClick={handleLogout}>
             Log out
           </button>
