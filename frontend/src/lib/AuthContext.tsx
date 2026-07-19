@@ -23,9 +23,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function refresh() {
     setLoading(true);
-    const me = await fetchMe();
-    setUser(me);
-    setLoading(false);
+    try {
+      const me = await fetchMe();
+      setUser(me);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {

@@ -50,7 +50,11 @@ export async function fetchMe(): Promise<{
   try {
     const res = await fetch(`${API_BASE}/auth/me`, { credentials: "include" });
     if (!res.ok) return null;
-    return res.json();
+    // Must be awaited here, not returned directly: a promise returned (not awaited) from
+    // inside a try block is not covered by its catch, so a JSON parse failure would
+    // otherwise propagate uncaught to the caller instead of falling through to `catch` below.
+    const data = await res.json();
+    return data;
   } catch {
     return null;
   }
