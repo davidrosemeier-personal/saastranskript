@@ -68,7 +68,7 @@ recordingsRouter.post(
       await Storage.upload(storagePath, file.buffer, file.mimetype || "audio/mpeg");
     } catch (err) {
       console.error("Storage upload failed:", err);
-      res.status(413).json({ error: "File too large for storage. Try a smaller file." });
+      res.status(502).json({ error: "Failed to store the uploaded file. Please try again." });
       return;
     }
 

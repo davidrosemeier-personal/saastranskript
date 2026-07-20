@@ -103,7 +103,7 @@ export function Upload() {
           <>
             <p style={{ fontWeight: 700, marginBottom: 8 }}>Drop an audio or video file here</p>
             <p style={{ fontSize: 13, color: "var(--color-ink-soft)", marginBottom: 20 }}>
-              or click to browse (up to 50MB)
+              or click to browse (up to 500MB)
             </p>
             <Button variant="outline">Choose file</Button>
           </>

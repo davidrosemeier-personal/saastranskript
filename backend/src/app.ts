@@ -25,7 +25,7 @@ app.use("/api/webhooks", webhooksRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
-    res.status(413).json({ error: "File is too large for the current upload limit (50MB)." });
+    res.status(413).json({ error: "File is too large for the current upload limit (500MB)." });
     return;
   }
   console.error(err);
