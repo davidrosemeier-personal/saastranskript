@@ -39,6 +39,12 @@ const envSchema = z.object({
   BACKEND_PUBLIC_URL: z.string().url(),
 
   DEFAULT_USAGE_LIMIT_MINUTES: z.coerce.number().default(180),
+
+  // Internal voice-embedding microservice (voice-service/), used for cross-recording
+  // speaker recognition. Not exposed to the browser — server-to-server only.
+  VOICE_SERVICE_URL: z.string().url(),
+  VOICE_SERVICE_SECRET: z.string().min(1),
+  VOICE_MATCH_THRESHOLD: z.coerce.number().min(0).max(1).default(0.75),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -42,6 +42,7 @@ export interface Transcript {
   id: string;
   recording_id: string;
   user_id: string;
+  speakers_confirmed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -57,16 +58,10 @@ export interface TranscriptSegment {
   end_ms: number;
   sort_order: number;
   speaker_sample_path: string | null;
+  matched_profile_id: string | null;
+  match_confidence: number | null;
   created_at: string;
   updated_at: string;
-}
-
-export interface KnownName {
-  id: string;
-  user_id: string;
-  speaker_label: string;
-  display_name: string;
-  created_at: string;
 }
 
 export interface UsageLedgerEntry {

@@ -6,6 +6,8 @@ import { Login } from "./pages/auth/Login";
 import { Upload } from "./pages/app/Upload";
 import { Recordings } from "./pages/app/Recordings";
 import { TranscriptEditor } from "./pages/app/TranscriptEditor";
+import { NameSpeakers } from "./pages/app/NameSpeakers";
+import { VoiceSettings } from "./pages/app/VoiceSettings";
 import { AdminUsers } from "./pages/admin/Users";
 import { AdminProviderKeys } from "./pages/admin/ProviderKeys";
 import { AdminPlatformSettings } from "./pages/admin/PlatformSettings";
@@ -14,6 +16,7 @@ import { UploadIcon, RecordingsIcon, UsersIcon, KeyIcon, SettingsIcon } from "./
 const userNavItems = [
   { to: "/upload", label: "Upload", icon: <UploadIcon /> },
   { to: "/recordings", label: "Recordings", icon: <RecordingsIcon /> },
+  { to: "/settings", label: "Settings", icon: <SettingsIcon /> },
 ];
 
 const adminNavItems = [
@@ -68,6 +71,26 @@ function AppRoutes() {
           <RequireAuth>
             <AppShell navItems={userNavItems}>
               <TranscriptEditor />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/recordings/:recordingId/name-speakers"
+        element={
+          <RequireAuth>
+            <AppShell navItems={userNavItems}>
+              <NameSpeakers />
+            </AppShell>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireAuth>
+            <AppShell navItems={userNavItems}>
+              <VoiceSettings />
             </AppShell>
           </RequireAuth>
         }

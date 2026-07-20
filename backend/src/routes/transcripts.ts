@@ -3,10 +3,11 @@ import { requireActiveUser, requireAuth } from "../middleware/auth.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { Transcripts } from "../repositories/transcripts.js";
 import { TranscriptSegments } from "../repositories/transcriptSegments.js";
-import { KnownNames } from "../repositories/knownNames.js";
+import { SpeakerVoiceProfiles } from "../repositories/speakerVoiceProfiles.js";
 import { Storage } from "../services/storage/index.js";
 import { generateTranscriptMarkdown } from "../services/markdown/index.js";
 import { saveTranscriptToDrive, DriveRevokedError } from "../services/drive/index.js";
+import { embedAudioClip } from "../services/voice/index.js";
 
 export const transcriptsRouter = Router();
 transcriptsRouter.use(requireAuth, requireActiveUser);
@@ -107,7 +108,85 @@ transcriptsRouter.patch(
     }
     const speakerLabel = decodeURIComponent(req.params.speakerLabel!);
     await TranscriptSegments.renameSpeaker(userId, req.params.id!, speakerLabel, displayName);
-    await KnownNames.upsert(userId, speakerLabel, displayName);
+    res.status(204).end();
+  })
+);
+
+/** One row per distinct speaker in this transcript, for the naming-review page. */
+transcriptsRouter.get(
+  "/:id/speakers",
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id;
+    const transcript = await Transcripts.findForUser(userId, req.params.id!);
+    if (!transcript) {
+      res.status(404).json({ error: "Transcript not found" });
+      return;
+    }
+    const speakers = await TranscriptSegments.distinctSpeakers(userId, transcript.id);
+    const result = await Promise.all(
+      speakers.map(async (s) => ({
+        speakerLabel: s.speaker_label,
+        suggestedName: s.speaker_name,
+        sampleUrl: s.speaker_sample_path ? await Storage.createSignedUrl(s.speaker_sample_path) : null,
+        matchedProfileId: s.matched_profile_id,
+        matchConfidence: s.match_confidence,
+      }))
+    );
+    res.json(result);
+  })
+);
+
+interface ConfirmSpeakerEntry {
+  speakerLabel: string;
+  displayName: string;
+  remember: boolean;
+}
+
+/**
+ * Applies reviewed speaker names (cascading per label) and, for any speaker the user
+ * opted to remember, upserts a speaker_voice_profiles row so future recordings can
+ * auto-suggest this name via voice matching. Finally unblocks the transcript editor.
+ */
+transcriptsRouter.post(
+  "/:id/confirm-speakers",
+  asyncHandler(async (req, res) => {
+    const userId = req.user!.id;
+    const transcript = await Transcripts.findForUser(userId, req.params.id!);
+    if (!transcript) {
+      res.status(404).json({ error: "Transcript not found" });
+      return;
+    }
+    const { speakers } = req.body as { speakers?: ConfirmSpeakerEntry[] };
+    if (!Array.isArray(speakers)) {
+      res.status(400).json({ error: "speakers must be an array" });
+      return;
+    }
+
+    const distinctSpeakers = await TranscriptSegments.distinctSpeakers(userId, transcript.id);
+    const byLabel = new Map(distinctSpeakers.map((s) => [s.speaker_label, s]));
+
+    for (const entry of speakers) {
+      if (!entry.speakerLabel || !entry.displayName) continue;
+      await TranscriptSegments.renameSpeaker(userId, transcript.id, entry.speakerLabel, entry.displayName);
+
+      if (!entry.remember) continue;
+      const current = byLabel.get(entry.speakerLabel);
+      if (!current) continue;
+
+      if (current.matched_profile_id) {
+        // Already matched to an existing profile — a "remember" here just means the
+        // suggested name was corrected, so update that profile rather than duplicate it.
+        await SpeakerVoiceProfiles.update(userId, current.matched_profile_id, {
+          displayName: entry.displayName,
+        });
+      } else if (current.speaker_sample_path) {
+        const clip = await Storage.download(current.speaker_sample_path);
+        const embedding = await embedAudioClip(clip);
+        await SpeakerVoiceProfiles.create(userId, entry.displayName, embedding);
+      }
+    }
+
+    await Transcripts.markSpeakersConfirmed(userId, transcript.id);
     res.status(204).end();
   })
 );

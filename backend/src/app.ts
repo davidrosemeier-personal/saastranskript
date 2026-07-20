@@ -8,6 +8,7 @@ import { recordingsRouter } from "./routes/recordings.js";
 import { transcriptsRouter } from "./routes/transcripts.js";
 import { adminRouter } from "./routes/admin.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { meRouter } from "./routes/me.js";
 
 export const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/recordings", recordingsRouter);
 app.use("/api/transcripts", transcriptsRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/webhooks", webhooksRouter);
+app.use("/api/me", meRouter);
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../layouts/AppShell";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
@@ -16,6 +16,11 @@ interface TranscriptSegment {
   sort_order: number;
 }
 
+interface TranscriptDetail {
+  id: string;
+  speakers_confirmed_at: string | null;
+}
+
 function formatTimestamp(ms: number): string {
   const totalSeconds = Math.floor(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
@@ -25,6 +30,7 @@ function formatTimestamp(ms: number): string {
 
 export function TranscriptEditor() {
   const { recordingId } = useParams<{ recordingId: string }>();
+  const navigate = useNavigate();
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,13 +41,17 @@ export function TranscriptEditor() {
   useEffect(() => {
     (async () => {
       if (!recordingId) return;
-      const transcript = await api.get<{ id: string }>(`/transcripts/by-recording/${recordingId}`);
+      const transcript = await api.get<TranscriptDetail>(`/transcripts/by-recording/${recordingId}`);
+      if (!transcript.speakers_confirmed_at) {
+        navigate(`/recordings/${recordingId}/name-speakers`, { replace: true });
+        return;
+      }
       setTranscriptId(transcript.id);
       const detail = await api.get<{ segments: TranscriptSegment[] }>(`/transcripts/${transcript.id}`);
       setSegments(detail.segments);
       setLoading(false);
     })();
-  }, [recordingId]);
+  }, [recordingId, navigate]);
 
   async function updateText(segmentId: string, text: string) {
     setSegments((prev) => prev.map((s) => (s.id === segmentId ? { ...s, text } : s)));
@@ -137,6 +147,11 @@ export function TranscriptEditor() {
           >
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <input
+                // Keying on the current name forces React to remount (not reuse) this
+                // uncontrolled input when a sibling segment's rename cascades a new
+                // speaker_name into this segment's state — otherwise defaultValue is
+                // only honored on first mount and the displayed text goes stale.
+                key={`${segment.id}-${segment.speaker_name ?? segment.speaker_label}`}
                 defaultValue={segment.speaker_name ?? segment.speaker_label}
                 onBlur={(e) => {
                   if (e.target.value !== (segment.speaker_name ?? segment.speaker_label)) {
