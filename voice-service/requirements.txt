@@ -6,3 +6,11 @@ python-multipart==0.0.17
 speechbrain==1.0.2
 torch==2.6.0
 torchaudio==2.6.0
+
+# speechbrain imports these at module load time; not always pulled in transitively.
+requests==2.32.3
+huggingface_hub==0.26.2
+hyperpyyaml==1.2.2
+sentencepiece==0.2.0
+joblib==1.4.2
+scipy==1.14.1
