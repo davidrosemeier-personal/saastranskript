@@ -4,5 +4,5 @@ fastapi==0.115.5
 uvicorn[standard]==0.32.0
 python-multipart==0.0.17
 speechbrain==1.0.2
-torch==2.5.1
-torchaudio==2.5.1
+torch==2.6.0
+torchaudio==2.6.0
