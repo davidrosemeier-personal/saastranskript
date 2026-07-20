@@ -14,3 +14,7 @@ hyperpyyaml==1.2.2
 sentencepiece==0.2.0
 joblib==1.4.2
 scipy==1.14.1
+
+# hyperpyyaml's Loader relies on a ruamel.yaml internal API (Loader.max_depth) that
+# was removed in ruamel.yaml 0.18 — pin below that until hyperpyyaml catches up.
+ruamel.yaml<0.18
