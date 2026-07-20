@@ -29,6 +29,9 @@ export function Upload() {
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         setError("You've reached your usage limit for this billing cycle.");
+      } else if (err instanceof ApiError && (err.status === 413 || err.status === 400)) {
+        const body = err.body as { error?: string } | null;
+        setError(body?.error ?? "Upload failed. Please try again.");
       } else {
         setError("Upload failed. Please try again.");
       }
@@ -100,7 +103,7 @@ export function Upload() {
           <>
             <p style={{ fontWeight: 700, marginBottom: 8 }}>Drop an audio or video file here</p>
             <p style={{ fontSize: 13, color: "var(--color-ink-soft)", marginBottom: 20 }}>
-              or click to browse (up to 500MB)
+              or click to browse (up to 50MB)
             </p>
             <Button variant="outline">Choose file</Button>
           </>
