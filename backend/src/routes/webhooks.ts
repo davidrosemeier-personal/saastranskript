@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 import { Recordings } from "../repositories/recordings.js";
 import { Transcripts } from "../repositories/transcripts.js";
 import { TranscriptSegments } from "../repositories/transcriptSegments.js";
@@ -14,7 +15,9 @@ export const webhooksRouter = Router();
 
 const SUPPORTED_PROVIDERS: ProviderName[] = ["assemblyai", "deepgram", "whisper"];
 
-webhooksRouter.post("/:provider", async (req, res) => {
+webhooksRouter.post(
+  "/:provider",
+  asyncHandler(async (req, res) => {
   const providerParam = req.params.provider;
   const recordingId = typeof req.query.recordingId === "string" ? req.query.recordingId : null;
 
@@ -73,7 +76,8 @@ webhooksRouter.post("/:provider", async (req, res) => {
   }
 
   res.status(200).end();
-});
+  })
+);
 
 /** One sample clip per distinct speaker label, extracted before the source audio is deleted. */
 async function extractSpeakerSamples(
