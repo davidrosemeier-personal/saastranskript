@@ -43,8 +43,15 @@ export interface Transcript {
   recording_id: string;
   user_id: string;
   speakers_confirmed_at: string | null;
+  last_exported_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+/** recordings.status plus the transcript-review facts, for the recordings list badge. */
+export interface RecordingWithTranscriptStatus extends Recording {
+  speakers_confirmed_at: string | null;
+  last_exported_at: string | null;
 }
 
 export interface TranscriptSegment {

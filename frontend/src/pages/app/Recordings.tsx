@@ -12,14 +12,42 @@ interface Recording {
   status: "uploaded" | "processing" | "completed" | "failed";
   duration_seconds: number | null;
   created_at: string;
+  speakers_confirmed_at: string | null;
+  last_exported_at: string | null;
 }
 
-const STATUS_TONE = {
+type DisplayStatus = "uploaded" | "processing" | "failed" | "needs_review" | "ready" | "exported";
+
+const STATUS_LABEL: Record<DisplayStatus, string> = {
+  uploaded: "Uploaded",
+  processing: "Transcribing…",
+  failed: "Failed",
+  needs_review: "Needs speaker review",
+  ready: "Ready",
+  exported: "Exported",
+};
+
+const STATUS_TONE: Record<DisplayStatus, "neutral" | "warning" | "success" | "danger"> = {
   uploaded: "neutral",
   processing: "warning",
-  completed: "success",
   failed: "danger",
-} as const;
+  needs_review: "warning",
+  ready: "success",
+  exported: "success",
+};
+
+/**
+ * recordings.status only tracks the transcription pipeline; whether speakers were
+ * reviewed and whether the transcript was ever exported live on the transcript row
+ * instead (independent facts, not a strict sequence — see conversation with the user).
+ * This derives the single badge the list shows from all of them.
+ */
+function displayStatus(r: Recording): DisplayStatus {
+  if (r.status !== "completed") return r.status;
+  if (!r.speakers_confirmed_at) return "needs_review";
+  if (r.last_exported_at) return "exported";
+  return "ready";
+}
 
 export function Recordings() {
   const [recordings, setRecordings] = useState<Recording[] | null>(null);
@@ -76,6 +104,7 @@ function RecordingRow({
 }) {
   const navigate = useNavigate();
   const clickable = recording.status === "completed";
+  const status = displayStatus(recording);
 
   return (
     <div
@@ -97,7 +126,7 @@ function RecordingRow({
         {recording.duration_seconds ? `${Math.round(recording.duration_seconds / 60)} min` : "—"}
       </div>
       <div>
-        <Badge tone={STATUS_TONE[recording.status]}>{recording.status}</Badge>
+        <Badge tone={STATUS_TONE[status]}>{STATUS_LABEL[status]}</Badge>
       </div>
       <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
         {clickable && (

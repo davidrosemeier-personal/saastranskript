@@ -1,10 +1,16 @@
 import { pool } from "../db/pool.js";
-import type { Recording, RecordingStatus } from "../types.js";
+import type { Recording, RecordingStatus, RecordingWithTranscriptStatus } from "../types.js";
 
 export const Recordings = {
-  async forUser(userId: string): Promise<Recording[]> {
-    const { rows } = await pool.query<Recording>(
-      "SELECT * FROM recordings WHERE user_id = $1 ORDER BY created_at DESC",
+  /** Includes speakers_confirmed_at/last_exported_at from the transcript (if any) so the
+   *  recordings list can show a richer status than the pipeline-only recordings.status. */
+  async forUser(userId: string): Promise<RecordingWithTranscriptStatus[]> {
+    const { rows } = await pool.query<RecordingWithTranscriptStatus>(
+      `SELECT r.*, t.speakers_confirmed_at, t.last_exported_at
+       FROM recordings r
+       LEFT JOIN transcripts t ON t.recording_id = r.id AND t.user_id = r.user_id
+       WHERE r.user_id = $1
+       ORDER BY r.created_at DESC`,
       [userId]
     );
     return rows;

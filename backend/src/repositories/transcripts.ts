@@ -36,6 +36,14 @@ export const Transcripts = {
     );
   },
 
+  /** Records that the transcript was copied, downloaded as .md, or saved to Drive. */
+  async markExported(userId: string, transcriptId: string): Promise<void> {
+    await pool.query(
+      "UPDATE transcripts SET last_exported_at = now(), updated_at = now() WHERE id = $1 AND user_id = $2",
+      [transcriptId, userId]
+    );
+  },
+
   /**
    * Returns the speaker_sample_path values that will be orphaned by this delete,
    * so the caller can remove them from Supabase Storage. DB rows cascade automatically.

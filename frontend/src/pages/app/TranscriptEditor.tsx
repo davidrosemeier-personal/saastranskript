@@ -100,6 +100,18 @@ export function TranscriptEditor() {
     setTimeout(() => setCopySuccess(false), 2000);
   }
 
+  async function handleDownload() {
+    if (!transcriptId) return;
+    const markdown = await api.get<string>(`/transcripts/${transcriptId}/markdown?download=true`);
+    const blob = new Blob([markdown], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transcript-${transcriptId}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleSaveToDrive() {
     if (!transcriptId) return;
     try {
@@ -126,6 +138,9 @@ export function TranscriptEditor() {
           <>
             <Button variant="outline" onClick={handleCopy}>
               {copySuccess ? "Copied!" : "Copy transcript"}
+            </Button>
+            <Button variant="outline" onClick={handleDownload}>
+              Download as MD
             </Button>
             <Button onClick={handleSaveToDrive}>{saveSuccess ? "Saved!" : "Save to Drive"}</Button>
           </>

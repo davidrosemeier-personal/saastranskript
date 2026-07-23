@@ -191,6 +191,7 @@ transcriptsRouter.post(
   })
 );
 
+/** ?download=true adds a Content-Disposition header so the browser saves a .md file. */
 transcriptsRouter.get(
   "/:id/markdown",
   asyncHandler(async (req, res) => {
@@ -201,7 +202,13 @@ transcriptsRouter.get(
       return;
     }
     const segments = await TranscriptSegments.forTranscript(userId, transcript.id);
-    res.type("text/markdown").send(generateTranscriptMarkdown(segments));
+    await Transcripts.markExported(userId, transcript.id);
+
+    res.type("text/markdown");
+    if (req.query.download === "true") {
+      res.setHeader("Content-Disposition", `attachment; filename="transcript-${transcript.id}.md"`);
+    }
+    res.send(generateTranscriptMarkdown(segments));
   })
 );
 
@@ -219,6 +226,7 @@ transcriptsRouter.post(
 
     try {
       await saveTranscriptToDrive(userId, `Transcript ${transcript.id}.md`, markdown);
+      await Transcripts.markExported(userId, transcript.id);
       res.status(204).end();
     } catch (err) {
       if (err instanceof DriveRevokedError) {
