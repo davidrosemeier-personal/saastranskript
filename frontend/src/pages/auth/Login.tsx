@@ -30,6 +30,8 @@ export function Login() {
         return;
       }
       window.location.href = "/upload";
+    } catch {
+      setError("Could not reach the server. Please try again.");
     } finally {
       setSubmitting(false);
     }

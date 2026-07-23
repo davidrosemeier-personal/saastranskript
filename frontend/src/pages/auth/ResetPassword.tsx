@@ -35,6 +35,8 @@ export function ResetPassword() {
         return;
       }
       navigate("/login");
+    } catch {
+      setError("Could not reach the server. Please try again.");
     } finally {
       setSubmitting(false);
     }
