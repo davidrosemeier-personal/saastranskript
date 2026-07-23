@@ -5,6 +5,7 @@
     "python": "3.12"
   },
   "deploy": {
+    "aptPackages": ["ffmpeg"],
     "startCommand": "uvicorn main:app --host 0.0.0.0 --port $PORT"
   }
 }
