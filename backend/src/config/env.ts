@@ -13,9 +13,10 @@ const envSchema = z.object({
   R2_SECRET_ACCESS_KEY: z.string().min(1),
   R2_BUCKET_NAME: z.string().default("recordings"),
 
-  GOOGLE_CLIENT_ID: z.string().min(1),
-  GOOGLE_CLIENT_SECRET: z.string().min(1),
-  GOOGLE_OAUTH_REDIRECT_URI: z.string().url(),
+  // Resend — transactional email for password reset links.
+  RESEND_API_KEY: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
+  PASSWORD_RESET_TOKEN_TTL_MINUTES: z.coerce.number().default(60),
 
   ADMIN_EMAILS: z
     .string()

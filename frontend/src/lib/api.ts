@@ -44,7 +44,6 @@ export async function fetchMe(): Promise<{
   id: string;
   email: string;
   displayName: string | null;
-  avatarUrl: string | null;
   isAdmin: boolean;
 } | null> {
   try {

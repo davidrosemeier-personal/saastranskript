@@ -2,9 +2,9 @@ import { pool } from "../db/pool.js";
 import type { User } from "../types.js";
 
 export const Users = {
-  async findByGoogleId(googleId: string): Promise<User | null> {
-    const { rows } = await pool.query<User>("SELECT * FROM users WHERE google_id = $1", [
-      googleId,
+  async findByEmail(email: string): Promise<User | null> {
+    const { rows } = await pool.query<User>("SELECT * FROM users WHERE email = $1", [
+      email.toLowerCase(),
     ]);
     return rows[0] ?? null;
   },
@@ -14,31 +14,28 @@ export const Users = {
     return rows[0] ?? null;
   },
 
-  async upsertFromGoogle(params: {
-    googleId: string;
+  async create(params: {
     email: string;
+    passwordHash: string;
     displayName: string | null;
-    avatarUrl: string | null;
     isAdmin: boolean;
-    defaultUsageLimitMinutes: number;
   }): Promise<User> {
     const { rows } = await pool.query<User>(
-      `INSERT INTO users (google_id, email, display_name, avatar_url, is_admin, usage_limit_minutes)
-       VALUES ($1, $2, $3, $4, $5, NULL)
-       ON CONFLICT (google_id) DO UPDATE SET
-         email = EXCLUDED.email,
-         display_name = EXCLUDED.display_name,
-         avatar_url = EXCLUDED.avatar_url,
-         is_admin = EXCLUDED.is_admin,
-         updated_at = now()
+      `INSERT INTO users (email, password_hash, display_name, is_admin)
+       VALUES ($1, $2, $3, $4)
        RETURNING *`,
-      [params.googleId, params.email, params.displayName, params.avatarUrl, params.isAdmin]
+      [params.email.toLowerCase(), params.passwordHash, params.displayName, params.isAdmin]
     );
-    // defaultUsageLimitMinutes is only a fallback used at read time when usage_limit_minutes is NULL
-    void params.defaultUsageLimitMinutes;
     const row = rows[0];
-    if (!row) throw new Error("upsertFromGoogle: insert returned no row");
+    if (!row) throw new Error("Users.create: insert returned no row");
     return row;
+  },
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await pool.query("UPDATE users SET password_hash = $2, updated_at = now() WHERE id = $1", [
+      userId,
+      passwordHash,
+    ]);
   },
 
   // --- Admin-only ---

@@ -3,6 +3,9 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/AuthContext";
 import { AppShell } from "./layouts/AppShell";
 import { Login } from "./pages/auth/Login";
+import { Register } from "./pages/auth/Register";
+import { ForgotPassword } from "./pages/auth/ForgotPassword";
+import { ResetPassword } from "./pages/auth/ResetPassword";
 import { Upload } from "./pages/app/Upload";
 import { Recordings } from "./pages/app/Recordings";
 import { TranscriptEditor } from "./pages/app/TranscriptEditor";
@@ -44,6 +47,9 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route
         path="/upload"

@@ -6,7 +6,6 @@ import { TranscriptSegments } from "../repositories/transcriptSegments.js";
 import { SpeakerVoiceProfiles } from "../repositories/speakerVoiceProfiles.js";
 import { Storage } from "../services/storage/index.js";
 import { generateTranscriptMarkdown } from "../services/markdown/index.js";
-import { saveTranscriptToDrive, DriveRevokedError } from "../services/drive/index.js";
 import { embedAudioClip } from "../services/voice/index.js";
 
 export const transcriptsRouter = Router();
@@ -209,31 +208,5 @@ transcriptsRouter.get(
       res.setHeader("Content-Disposition", `attachment; filename="transcript-${transcript.id}.md"`);
     }
     res.send(generateTranscriptMarkdown(segments));
-  })
-);
-
-transcriptsRouter.post(
-  "/:id/save-to-drive",
-  asyncHandler(async (req, res) => {
-    const userId = req.user!.id;
-    const transcript = await Transcripts.findForUser(userId, req.params.id!);
-    if (!transcript) {
-      res.status(404).json({ error: "Transcript not found" });
-      return;
-    }
-    const segments = await TranscriptSegments.forTranscript(userId, transcript.id);
-    const markdown = generateTranscriptMarkdown(segments);
-
-    try {
-      await saveTranscriptToDrive(userId, `Transcript ${transcript.id}.md`, markdown);
-      await Transcripts.markExported(userId, transcript.id);
-      res.status(204).end();
-    } catch (err) {
-      if (err instanceof DriveRevokedError) {
-        res.status(409).json({ error: "drive_revoked", message: "Reconnect Google Drive to continue" });
-        return;
-      }
-      throw err;
-    }
   })
 );

@@ -2,11 +2,14 @@ import { Router } from "express";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { requireActiveUser, requireAdmin, requireAuth } from "../middleware/auth.js";
 import { Users } from "../repositories/users.js";
+import { PasswordResetTokens } from "../repositories/passwordResetTokens.js";
 import { UsageLedger } from "../repositories/usageLedger.js";
 import { ProviderCredentialsRepo } from "../repositories/providerCredentials.js";
 import { PlatformSettingsRepo } from "../repositories/platformSettings.js";
 import { UsageService } from "../services/usage/index.js";
 import { encrypt } from "../services/crypto/index.js";
+import { sendPasswordResetEmail } from "../services/email/index.js";
+import { env } from "../config/env.js";
 import type { ProviderName } from "../types.js";
 
 export const adminRouter = Router();
@@ -47,6 +50,23 @@ adminRouter.post(
   asyncHandler(async (req, res) => {
     const user = await Users.setStatus(req.params.id!, "active");
     res.json(user);
+  })
+);
+
+/** Admin never sets or sees a plaintext password — this just emails the user the same
+ *  reset link the self-service "forgot password" flow would send. */
+adminRouter.post(
+  "/users/:id/reset-password",
+  asyncHandler(async (req, res) => {
+    const user = await Users.findById(req.params.id!);
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+    const token = await PasswordResetTokens.create(user.id);
+    const resetUrl = `${env.FRONTEND_URL}/reset-password?token=${token}`;
+    await sendPasswordResetEmail(user.email, resetUrl);
+    res.status(204).end();
   })
 );
 

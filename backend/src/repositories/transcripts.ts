@@ -36,7 +36,7 @@ export const Transcripts = {
     );
   },
 
-  /** Records that the transcript was copied, downloaded as .md, or saved to Drive. */
+  /** Records that the transcript was copied or downloaded as .md. */
   async markExported(userId: string, transcriptId: string): Promise<void> {
     await pool.query(
       "UPDATE transcripts SET last_exported_at = now(), updated_at = now() WHERE id = $1 AND user_id = $2",

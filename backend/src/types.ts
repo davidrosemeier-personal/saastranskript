@@ -1,23 +1,12 @@
 export interface User {
   id: string;
-  google_id: string;
   email: string;
+  password_hash: string;
   display_name: string | null;
-  avatar_url: string | null;
   is_admin: boolean;
   status: "active" | "blocked";
   usage_limit_minutes: number | null;
   cycle_start_at: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DriveCredentials {
-  id: string;
-  user_id: string;
-  encrypted_refresh_token: string;
-  drive_folder_id: string | null;
-  status: "active" | "revoked";
   created_at: string;
   updated_at: string;
 }

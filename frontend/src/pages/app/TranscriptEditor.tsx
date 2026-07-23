@@ -3,9 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "../../layouts/AppShell";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
-import { Banner } from "../../components/ui/Banner";
-import { api, ApiError } from "../../lib/api";
-import { API_BASE } from "../../lib/config";
+import { api } from "../../lib/api";
 
 interface TranscriptSegment {
   id: string;
@@ -34,9 +32,7 @@ export function TranscriptEditor() {
   const [transcriptId, setTranscriptId] = useState<string | null>(null);
   const [segments, setSegments] = useState<TranscriptSegment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [driveRevoked, setDriveRevoked] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -112,19 +108,6 @@ export function TranscriptEditor() {
     URL.revokeObjectURL(url);
   }
 
-  async function handleSaveToDrive() {
-    if (!transcriptId) return;
-    try {
-      await api.post(`/transcripts/${transcriptId}/save-to-drive`);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 2000);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setDriveRevoked(true);
-      }
-    }
-  }
-
   if (loading) {
     return <div style={{ padding: 40, color: "var(--color-ink-faint)" }}>Loading transcript…</div>;
   }
@@ -133,26 +116,16 @@ export function TranscriptEditor() {
     <div>
       <PageHeader
         title="Transcript"
-        subtitle="Edit segments, rename speakers, then copy or save to Drive"
+        subtitle="Edit segments, rename speakers, then copy or download"
         actions={
           <>
             <Button variant="outline" onClick={handleCopy}>
               {copySuccess ? "Copied!" : "Copy transcript"}
             </Button>
-            <Button variant="outline" onClick={handleDownload}>
-              Download as MD
-            </Button>
-            <Button onClick={handleSaveToDrive}>{saveSuccess ? "Saved!" : "Save to Drive"}</Button>
+            <Button onClick={handleDownload}>Download as MD</Button>
           </>
         }
       />
-
-      {driveRevoked && (
-        <Banner tone="warning">
-          <strong>Google Drive access was revoked.</strong> Reconnect your account to save transcripts.{" "}
-          <a href={`${API_BASE}/auth/google/start`}>Reconnect Google Drive</a>
-        </Banner>
-      )}
 
       <Card>
         {segments.map((segment, i) => (

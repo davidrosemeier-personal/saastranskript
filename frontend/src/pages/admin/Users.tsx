@@ -47,6 +47,7 @@ export function AdminUsers() {
   const [users, setUsers] = useState<AdminUser[] | null>(null);
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [resetSentFor, setResetSentFor] = useState<string | null>(null);
   const { isOpen, toggle } = useExpandableRow();
 
   async function load() {
@@ -85,6 +86,17 @@ export function AdminUsers() {
     try {
       await api.post(`/admin/users/${id}/${block ? "block" : "unblock"}`);
       await load();
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  }
+
+  async function handleResetPassword(id: string) {
+    setError(null);
+    try {
+      await api.post(`/admin/users/${id}/reset-password`);
+      setResetSentFor(id);
+      setTimeout(() => setResetSentFor(null), 3000);
     } catch (err) {
       setError(errorMessage(err));
     }
@@ -163,6 +175,9 @@ export function AdminUsers() {
                           onClick={() => handleBlock(u.id, u.status === "active")}
                         >
                           {u.status === "active" ? "Block user" : "Unblock user"}
+                        </Button>
+                        <Button variant="outline" onClick={() => handleResetPassword(u.id)}>
+                          {resetSentFor === u.id ? "Reset email sent!" : "Reset password"}
                         </Button>
                       </div>
                     </DetailFieldPanel>
